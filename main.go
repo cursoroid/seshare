@@ -11,6 +11,7 @@ const usage = `seshare — share Claude Code sessions peer-to-peer
 
 usage:
   seshare pair <name> [--code <code>]   pair with someone (exchange a code once)
+  seshare pair <name> --rotate          replace a contact's code (re-share once)
   seshare pair --list                   list contacts
   seshare send [session-id] [@name]     send newest (or given) session
   seshare recv <@name | code>           receive and stage a session

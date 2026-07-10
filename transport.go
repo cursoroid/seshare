@@ -3,47 +3,76 @@ package main
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
+	"strconv"
+
+	"github.com/schollz/croc/v10/src/croc"
+	"github.com/schollz/croc/v10/src/models"
 )
 
-func crocPath() (string, error) {
-	p, err := exec.LookPath("croc")
-	if err != nil {
-		return "", fmt.Errorf("croc not found on PATH — install it: https://github.com/schollz/croc")
+// relayPorts mirrors croc's default transfer ports (base 9009 + 4).
+func relayPorts() []string {
+	base := 9009
+	ports := make([]string, 5)
+	for i := range ports {
+		ports[i] = strconv.Itoa(base + i)
 	}
-	return p, nil
+	return ports
 }
 
-// crocSend blocks until the peer receives `file` using the shared `code`.
+func baseOptions(code string, sender bool) croc.Options {
+	return croc.Options{
+		IsSender:         sender,
+		SharedSecret:     code,
+		NoPrompt:         true,
+		DisableClipboard: true,
+		RelayAddress:     models.DEFAULT_RELAY,
+		RelayAddress6:    models.DEFAULT_RELAY6,
+		RelayPassword:    models.DEFAULT_PASSPHRASE,
+		Curve:            "p256",
+		HashAlgorithm:    "xxhash",
+	}
+}
+
+// crocSend blocks until the peer receives `file`, authenticated by `code`.
 func crocSend(file, code string) error {
-	croc, err := crocPath()
+	opts := baseOptions(code, true)
+	opts.RelayPorts = relayPorts()
+	c, err := croc.New(opts)
 	if err != nil {
 		return err
 	}
-	// croc v10 forbids the code on the command line; it must come from the env.
-	cmd := exec.Command(croc, "send", file)
-	cmd.Env = append(os.Environ(), "CROC_SECRET="+code)
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-	return cmd.Run()
+	filesInfo, emptyFolders, totalFolders, err := croc.GetFilesInfo([]string{file}, false, false, nil)
+	if err != nil {
+		return err
+	}
+	return c.Send(filesInfo, emptyFolders, totalFolders)
 }
 
-// crocRecv receives a single file into a fresh dir and returns its path.
+// crocRecv receives one file into a fresh dir and returns its path. croc writes
+// to the working directory, so we chdir into a temp dir and restore after.
 func crocRecv(code string) (string, error) {
-	croc, err := crocPath()
-	if err != nil {
-		return "", err
-	}
 	out, err := os.MkdirTemp("", "seshare-recv-")
 	if err != nil {
 		return "", err
 	}
-	cmd := exec.Command(croc, "--yes", "--out", out)
-	cmd.Env = append(os.Environ(), "CROC_SECRET="+code)
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-	if err := cmd.Run(); err != nil {
+	saved, err := os.Getwd()
+	if err != nil {
 		return "", err
 	}
+	if err := os.Chdir(out); err != nil {
+		return "", err
+	}
+	defer os.Chdir(saved)
+
+	c, err := croc.New(baseOptions(code, false))
+	if err != nil {
+		return "", err
+	}
+	if err := c.Receive(); err != nil {
+		return "", err
+	}
+
 	files, _ := filepath.Glob(filepath.Join(out, "*"))
 	if len(files) != 1 {
 		return "", fmt.Errorf("expected one received file in %s, got %d", out, len(files))

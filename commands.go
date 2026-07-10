@@ -31,6 +31,7 @@ func cmdPair(args []string) error {
 	}
 
 	var name, code string
+	var rotate bool
 	for i := 0; i < len(args); i++ {
 		switch args[i] {
 		case "--code":
@@ -39,6 +40,8 @@ func cmdPair(args []string) error {
 			}
 			i++
 			code = args[i]
+		case "--rotate":
+			rotate = true
 		default:
 			if name != "" {
 				return fmt.Errorf("unexpected argument %q", args[i])
@@ -47,10 +50,10 @@ func cmdPair(args []string) error {
 		}
 	}
 	if name == "" {
-		return fmt.Errorf("usage: seshare pair <name> [--code <code>]")
+		return fmt.Errorf("usage: seshare pair <name> [--code <code> | --rotate]")
 	}
 
-	if code != "" { // receiving side of the pairing
+	if code != "" { // receiving side of the pairing (or accepting a rotated code)
 		if err := addContact(name, code); err != nil {
 			return err
 		}
@@ -59,11 +62,18 @@ func cmdPair(args []string) error {
 	}
 
 	// initiating side: generate the shared code
+	if _, err := getContact(name); err == nil && !rotate {
+		return fmt.Errorf("already paired with %q; use --rotate to generate a new code", name)
+	}
 	code = newCode()
 	if err := addContact(name, code); err != nil {
 		return err
 	}
-	fmt.Printf("paired with %q.\nSend them this code once (any channel):\n\n    %s\n\nThey run:  seshare pair <your-name> --code %s\n", name, code, code)
+	verb := "paired with"
+	if rotate {
+		verb = "rotated code for"
+	}
+	fmt.Printf("%s %q.\nSend them this code once (any channel):\n\n    %s\n\nThey run:  seshare pair <your-name> --code %s\n", verb, name, code, code)
 	return nil
 }
 

@@ -7,9 +7,10 @@ with `claude --resume`. Transfers go directly between the two machines over
 ## Install
 
 ```sh
-brew install croc           # required runtime dependency
 go install github.com/cursoroid/seshare@latest
 ```
+
+croc is embedded — no separate install needed.
 
 ## Use
 
@@ -51,6 +52,7 @@ One-off without pairing: `seshare send` prints a one-time code; recipient runs
 - If `--resume` trips on the sender's local file snapshots, receive with
   `seshare recv @you --strip-snapshots`.
 - Contacts live in `~/.seshare/contacts.json` (`0600`). A per-contact code is a
-  permanent shared secret — re-pair to rotate it.
+  permanent shared secret; rotate it with `seshare pair <name> --rotate` (then
+  re-share the new code once).
 
 See `docs/superpowers/specs/` for the design.
