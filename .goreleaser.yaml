@@ -1,0 +1,40 @@
+version: 2
+
+project_name: seshare
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - main: .
+    binary: seshare
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w
+
+archives:
+  - formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+homebrew_casks:
+  - name: seshare
+    repository:
+      owner: cursoroid
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/cursoroid/seshare"
+    description: "Share Claude Code sessions peer-to-peer over croc"
+    # macOS quarantines downloaded binaries; strip the xattr so it runs.
+    hooks:
+      post:
+        install: |
+          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/seshare"]
+          end

@@ -219,3 +219,6 @@ __marimo__/
 
 # Go binary
 /seshare
+
+# GoReleaser
+/dist/
