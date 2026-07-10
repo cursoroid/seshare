@@ -12,8 +12,8 @@ usage:
   seshare pair <name> [--code <code>]   pair with someone (exchange a code once)
   seshare pair <name> --rotate          replace a contact's code (re-share once)
   seshare pair --list                   list contacts
-  seshare send [session-id] [@name]     send newest (or given) session
-  seshare recv <@name | code> [-r]      receive, stage (-r resumes in claude)
+  seshare send [session-id] [name]      send to a contact (name or @name)
+  seshare recv <name | code> [-r]       receive by contact name or raw code
   seshare tui                           browse sessions and send interactively
   seshare --version                     print version
 

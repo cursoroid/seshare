@@ -85,19 +85,9 @@ func cmdPair(args []string) error {
 // ---- send ---------------------------------------------------------------
 
 func cmdSend(args []string) error {
-	var id, name string
-	var yes bool
-	for _, a := range args {
-		switch {
-		case a == "--yes" || a == "-y":
-			yes = true
-		case strings.HasPrefix(a, "@"):
-			name = a[1:]
-		case strings.HasPrefix(a, "-"):
-			return fmt.Errorf("unknown flag %q", a)
-		default:
-			id = a
-		}
+	id, name, yes, err := parseSend(args)
+	if err != nil {
+		return err
 	}
 
 	cwd, err := os.Getwd()
@@ -140,6 +130,29 @@ func cmdSend(args []string) error {
 		fmt.Printf("one-time code (share it): %s\nrecipient runs:  seshare recv %s\n", code, code)
 	}
 	return transport.Send(gz, code)
+}
+
+// parseSend splits send args into an optional session id and recipient. A "@name"
+// or a bare word that matches a paired contact is the recipient; any other bare
+// word is a session id. So the "@" is optional when the name is a known contact.
+func parseSend(args []string) (id, name string, yes bool, err error) {
+	for _, a := range args {
+		switch {
+		case a == "--yes" || a == "-y":
+			yes = true
+		case strings.HasPrefix(a, "@"):
+			name = a[1:]
+		case strings.HasPrefix(a, "-"):
+			return "", "", false, fmt.Errorf("unknown flag %q", a)
+		default:
+			if _, e := contacts.Get(a); e == nil {
+				name = a
+			} else {
+				id = a
+			}
+		}
+	}
+	return id, name, yes, nil
 }
 
 // ---- recv ---------------------------------------------------------------

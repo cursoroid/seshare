@@ -30,28 +30,39 @@ go install github.com/cursoroid/seshare@latest        # Go (@vX.Y.Z to pin)
 
 ## Use
 
-Pair once with a person (exchange the code a single time, any channel):
+Pair once — each of you saves the *other* person under a local name of your
+choosing. The two names are independent (they don't have to match); the code is
+exchanged a single time:
 
 ```sh
-# you
-seshare pair alice
-# -> prints a code; send it to alice once
+# on your machine — you save your friend as "bob"
+seshare pair bob
+# -> prints a code; send it to bob once
 
-# alice
-seshare pair you --code <that-code>
+# on bob's machine — bob saves you as "alice"
+seshare pair alice --code <that-code>
 ```
 
 Then send and receive by name — no code typing:
 
 ```sh
-# sender (in the repo dir the session belongs to)
-seshare send @alice              # newest session in this dir
-seshare send <session-id> @alice # a specific one
+# you (sender), in the repo dir the session belongs to — use the name YOU saved
+seshare send bob                # newest session in this dir
+seshare send <session-id> bob   # a specific one
 
-# recipient (in the dir they want to continue from)
-seshare recv @you        # prints: cd <dir> && claude --resume <new-id>
-seshare recv @you -r     # ...or jump straight into `claude --resume`
+# bob (recipient), in the dir he wants to continue from — the name HE saved for you
+seshare recv alice        # prints: cd <dir> && claude --resume <new-id>
+seshare recv alice -r     # ...or jump straight into `claude --resume`
 ```
+
+The `@` prefix is optional — `send bob` and `send @bob` are the same. Use `@`
+only if you ever have a contact whose name collides with a session id.
+
+> **Names are local.** On `recv`, use the name *you* saved the **sender** under
+> — not your own name. Contact names are per-machine and asymmetric: you call
+> your friend `bob`, he calls you `alice`. A bare word that isn't one of your
+> contacts is treated as a raw code, so a wrong name just fails (after a 2-min
+> timeout). The raw code always works regardless of names: `seshare recv <code>`.
 
 Both sides must be online at the same time (it's a live P2P handoff).
 
