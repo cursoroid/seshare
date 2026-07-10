@@ -12,6 +12,16 @@ go install github.com/cursoroid/seshare@latest
 
 croc is embedded — no separate install needed.
 
+## Update
+
+Re-run the install command; `@latest` pulls the newest release:
+
+```sh
+go install github.com/cursoroid/seshare@latest
+```
+
+Pin a specific version with `@v1.2.3` instead of `@latest`.
+
 ## Use
 
 Pair once with a person (exchange the code a single time, any channel):
