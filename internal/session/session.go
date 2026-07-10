@@ -1,4 +1,5 @@
-package app
+// Package session locates Claude Code session transcripts on disk.
+package session
 
 import (
 	"fmt"
@@ -8,9 +9,9 @@ import (
 	"strings"
 )
 
-// localClaudeVersion returns the installed Claude Code version, or "" if it
+// LocalClaudeVersion returns the installed Claude Code version, or "" if it
 // can't be determined. Best-effort, used only for a mismatch warning.
-func localClaudeVersion() string {
+func LocalClaudeVersion() string {
 	out, err := exec.Command("claude", "--version").Output()
 	if err != nil {
 		return ""
@@ -34,14 +35,15 @@ func defaultClaudeProjectsDir() string {
 	return filepath.Join(home, ".claude", "projects")
 }
 
-func sessionDir(cwd string) string {
+// Dir returns the project transcript directory for a working directory.
+func Dir(cwd string) string {
 	return filepath.Join(claudeProjectsDir, mungedCwd(cwd))
 }
 
-// resolveSession returns the transcript path for a session in cwd's project.
+// Resolve returns the transcript path for a session in cwd's project.
 // Empty id -> newest *.jsonl by mtime; otherwise the file named <id>.jsonl.
-func resolveSession(cwd, id string) (string, error) {
-	dir := sessionDir(cwd)
+func Resolve(cwd, id string) (string, error) {
+	dir := Dir(cwd)
 	if id != "" {
 		p := filepath.Join(dir, id+".jsonl")
 		if _, err := os.Stat(p); err != nil {

@@ -1,4 +1,5 @@
-package app
+// Package transport moves a file between two machines over croc (embedded).
+package transport
 
 import (
 	"fmt"
@@ -34,8 +35,8 @@ func baseOptions(code string, sender bool) croc.Options {
 	}
 }
 
-// crocSend blocks until the peer receives `file`, authenticated by `code`.
-func crocSend(file, code string) error {
+// Send blocks until the peer receives `file`, authenticated by `code`.
+func Send(file, code string) error {
 	opts := baseOptions(code, true)
 	opts.RelayPorts = relayPorts()
 	c, err := croc.New(opts)
@@ -49,9 +50,9 @@ func crocSend(file, code string) error {
 	return c.Send(filesInfo, emptyFolders, totalFolders)
 }
 
-// crocRecv receives one file into a fresh dir and returns its path. croc writes
-// to the working directory, so we chdir into a temp dir and restore after.
-func crocRecv(code string) (string, error) {
+// Recv receives one file into a fresh dir and returns its path. croc writes to
+// the working directory, so we chdir into a temp dir and restore after.
+func Recv(code string) (string, error) {
 	out, err := os.MkdirTemp("", "seshare-recv-")
 	if err != nil {
 		return "", err

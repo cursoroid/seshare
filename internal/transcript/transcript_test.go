@@ -1,4 +1,4 @@
-package app
+package transcript
 
 import (
 	"encoding/json"
@@ -6,15 +6,15 @@ import (
 	"testing"
 )
 
-func TestRewriteTranscript(t *testing.T) {
+func TestRewrite(t *testing.T) {
 	in := strings.Join([]string{
 		`{"type":"user","cwd":"/old/path","sessionId":"OLD-ID","uuid":"u1","message":{"role":"user"}}`,
 		`{"type":"assistant","cwd":"/old/path","sessionId":"OLD-ID","session_id":"OLD-ID","uuid":"u2"}`,
 		`{"type":"file-history-snapshot","messageId":"m1"}`, // no cwd/sessionId
-		``, // blank line preserved
+		``,
 	}, "\n")
 
-	out := rewriteTranscript([]byte(in), "/new/pwd", "NEW-ID")
+	out := Rewrite([]byte(in), "/new/pwd", "NEW-ID")
 
 	for _, line := range strings.Split(string(out), "\n") {
 		if strings.TrimSpace(line) == "" {
@@ -35,9 +35,7 @@ func TestRewriteTranscript(t *testing.T) {
 		}
 	}
 
-	// the snapshot line had no cwd; rewrite must not invent one
-	if strings.Contains(string(out), `"file-history-snapshot"`) &&
-		strings.Contains(strings.Split(string(out), "\n")[2], `"cwd"`) {
+	if strings.Contains(strings.Split(string(out), "\n")[2], `"cwd"`) {
 		t.Error("cwd should not be added to a line that lacked it")
 	}
 }

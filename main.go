@@ -5,7 +5,7 @@ package main
 import (
 	"os"
 
-	"github.com/cursoroid/seshare/internal/app"
+	"github.com/cursoroid/seshare/internal/cli"
 )
 
-func main() { os.Exit(app.Main(os.Args[1:])) }
+func main() { os.Exit(cli.Main(os.Args[1:])) }

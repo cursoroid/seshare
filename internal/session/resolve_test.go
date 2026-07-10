@@ -1,4 +1,4 @@
-package app
+package session
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestResolveSession(t *testing.T) {
+func TestResolve(t *testing.T) {
 	claudeProjectsDir = t.TempDir()
 	cwd := "/some/proj"
 	dir := filepath.Join(claudeProjectsDir, mungedCwd(cwd))
@@ -21,26 +21,18 @@ func TestResolveSession(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	// make `older` genuinely older
 	old := time.Now().Add(-time.Hour)
 	if err := os.Chtimes(older, old, old); err != nil {
 		t.Fatal(err)
 	}
 
-	// no id -> newest by mtime
-	got, err := resolveSession(cwd, "")
-	if err != nil || got != newer {
-		t.Errorf("resolveSession(newest) = %q,%v want %q", got, err, newer)
+	if got, err := Resolve(cwd, ""); err != nil || got != newer {
+		t.Errorf("Resolve(newest) = %q,%v want %q", got, err, newer)
 	}
-
-	// explicit id -> that file
-	got, err = resolveSession(cwd, "older")
-	if err != nil || got != older {
-		t.Errorf("resolveSession(id) = %q,%v want %q", got, err, older)
+	if got, err := Resolve(cwd, "older"); err != nil || got != older {
+		t.Errorf("Resolve(id) = %q,%v want %q", got, err, older)
 	}
-
-	// missing id -> error
-	if _, err := resolveSession(cwd, "nope"); err == nil {
-		t.Error("resolveSession(missing id) should error")
+	if _, err := Resolve(cwd, "nope"); err == nil {
+		t.Error("Resolve(missing id) should error")
 	}
 }

@@ -1,18 +1,19 @@
-package app
+// Package transcript rewrites Claude Code JSONL session transcripts for import.
+package transcript
 
 import (
 	"bytes"
 	"encoding/json"
 )
 
-// rewriteTranscript rewrites each JSONL line so a recipient can resume the
-// session: cwd -> newCwd and sessionId/session_id -> newID, only on lines that
-// already carry those fields. Other fields and blank lines are preserved.
+// Rewrite rewrites each JSONL line so a recipient can resume the session:
+// cwd -> newCwd and sessionId/session_id -> newID, only on lines that already
+// carry those fields. Other fields and blank lines are preserved.
 //
 // ponytail: full map round-trip reorders keys and floats large ints; fine for
 // JSONL (order-independent) and Claude's small numeric fields. Switch to a
 // targeted field edit if a future field needs exact byte fidelity.
-func rewriteTranscript(data []byte, newCwd, newID string) []byte {
+func Rewrite(data []byte, newCwd, newID string) []byte {
 	lines := bytes.Split(data, []byte("\n"))
 	for i, line := range lines {
 		if len(bytes.TrimSpace(line)) == 0 {
@@ -38,10 +39,10 @@ func rewriteTranscript(data []byte, newCwd, newID string) []byte {
 	return bytes.Join(lines, []byte("\n"))
 }
 
-// stripSnapshots drops file-history-snapshot lines and any line marked
+// StripSnapshots drops file-history-snapshot lines and any line marked
 // isSnapshotUpdate — they reference the sender's local files/checkpoints and
 // can trip up resume. Fallback used by `recv --strip-snapshots`.
-func stripSnapshots(data []byte) []byte {
+func StripSnapshots(data []byte) []byte {
 	var kept [][]byte
 	for _, line := range bytes.Split(data, []byte("\n")) {
 		if len(bytes.TrimSpace(line)) == 0 {
@@ -58,4 +59,26 @@ func stripSnapshots(data []byte) []byte {
 		kept = append(kept, line)
 	}
 	return bytes.Join(kept, []byte("\n"))
+}
+
+// PeekCwdVersion returns the first cwd and version fields found in the lines.
+func PeekCwdVersion(data []byte) (cwd, version string) {
+	for _, line := range bytes.Split(data, []byte("\n")) {
+		if cwd != "" && version != "" {
+			break
+		}
+		var m struct {
+			Cwd     string `json:"cwd"`
+			Version string `json:"version"`
+		}
+		if json.Unmarshal(line, &m) == nil {
+			if cwd == "" {
+				cwd = m.Cwd
+			}
+			if version == "" {
+				version = m.Version
+			}
+		}
+	}
+	return cwd, version
 }

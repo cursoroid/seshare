@@ -1,4 +1,4 @@
-package app
+package transcript
 
 import (
 	"strings"
@@ -13,7 +13,7 @@ func TestStripSnapshots(t *testing.T) {
 		`{"type":"assistant","uuid":"u3"}`,
 	}, "\n")
 
-	out := string(stripSnapshots([]byte(in)))
+	out := string(StripSnapshots([]byte(in)))
 
 	if strings.Contains(out, "file-history-snapshot") {
 		t.Error("file-history-snapshot line not stripped")

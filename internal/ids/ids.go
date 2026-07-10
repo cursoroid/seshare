@@ -1,4 +1,5 @@
-package app
+// Package ids generates session UUIDs and croc share codes.
+package ids
 
 import (
 	"crypto/rand"
@@ -6,8 +7,8 @@ import (
 	"fmt"
 )
 
-// newUUID returns a random RFC 4122 v4 UUID for a fresh session id.
-func newUUID() string {
+// NewUUID returns a random RFC 4122 v4 UUID for a fresh session id.
+func NewUUID() string {
 	var b [16]byte
 	if _, err := rand.Read(b[:]); err != nil {
 		panic(err) // crypto/rand failure is unrecoverable
@@ -17,8 +18,8 @@ func newUUID() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }
 
-// newCode returns a random hex string used as a croc transfer secret.
-func newCode() string {
+// NewCode returns a random hex string used as a croc transfer secret.
+func NewCode() string {
 	var b [12]byte
 	if _, err := rand.Read(b[:]); err != nil {
 		panic(err)

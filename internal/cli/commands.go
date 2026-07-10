@@ -1,22 +1,26 @@
-package app
+package cli
 
 import (
 	"bufio"
-	"bytes"
 	"compress/gzip"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/cursoroid/seshare/internal/contacts"
+	"github.com/cursoroid/seshare/internal/ids"
+	"github.com/cursoroid/seshare/internal/session"
+	"github.com/cursoroid/seshare/internal/transcript"
+	"github.com/cursoroid/seshare/internal/transport"
 )
 
 // ---- pair ---------------------------------------------------------------
 
 func cmdPair(args []string) error {
 	if len(args) == 1 && args[0] == "--list" {
-		names, err := listContactNames()
+		names, err := contacts.ListNames()
 		if err != nil {
 			return err
 		}
@@ -54,7 +58,7 @@ func cmdPair(args []string) error {
 	}
 
 	if code != "" { // receiving side of the pairing (or accepting a rotated code)
-		if err := addContact(name, code); err != nil {
+		if err := contacts.Add(name, code); err != nil {
 			return err
 		}
 		fmt.Printf("paired with %q\n", name)
@@ -62,11 +66,11 @@ func cmdPair(args []string) error {
 	}
 
 	// initiating side: generate the shared code
-	if _, err := getContact(name); err == nil && !rotate {
+	if _, err := contacts.Get(name); err == nil && !rotate {
 		return fmt.Errorf("already paired with %q; use --rotate to generate a new code", name)
 	}
-	code = newCode()
-	if err := addContact(name, code); err != nil {
+	code = ids.NewCode()
+	if err := contacts.Add(name, code); err != nil {
 		return err
 	}
 	verb := "paired with"
@@ -99,7 +103,7 @@ func cmdSend(args []string) error {
 	if err != nil {
 		return err
 	}
-	path, err := resolveSession(cwd, id)
+	path, err := session.Resolve(cwd, id)
 	if err != nil {
 		return err
 	}
@@ -124,15 +128,15 @@ func cmdSend(args []string) error {
 
 	code := ""
 	if name != "" {
-		if code, err = getContact(name); err != nil {
+		if code, err = contacts.Get(name); err != nil {
 			return err
 		}
 		fmt.Printf("sending to %q…\n", name)
 	} else {
-		code = newCode()
+		code = ids.NewCode()
 		fmt.Printf("one-time code (share it): %s\nrecipient runs:  seshare recv %s\n", code, code)
 	}
-	return crocSend(gz, code)
+	return transport.Send(gz, code)
 }
 
 // ---- recv ---------------------------------------------------------------
@@ -159,14 +163,14 @@ func cmdRecv(args []string) error {
 
 	code := target
 	if strings.HasPrefix(target, "@") {
-		c, err := getContact(target[1:])
+		c, err := contacts.Get(target[1:])
 		if err != nil {
 			return err
 		}
 		code = c
 	}
 
-	gzPath, err := crocRecv(code)
+	gzPath, err := transport.Recv(code)
 	if err != nil {
 		return err
 	}
@@ -177,22 +181,22 @@ func cmdRecv(args []string) error {
 		return err
 	}
 	if strip {
-		data = stripSnapshots(data)
+		data = transcript.StripSnapshots(data)
 	}
 
-	origCwd, origVer := peekCwdVersion(data)
-	if origVer != "" && localClaudeVersion() != "" && origVer != localClaudeVersion() {
-		fmt.Fprintf(os.Stderr, "warning: session was made with Claude Code %s, you have %s\n", origVer, localClaudeVersion())
+	origCwd, origVer := transcript.PeekCwdVersion(data)
+	if local := session.LocalClaudeVersion(); origVer != "" && local != "" && origVer != local {
+		fmt.Fprintf(os.Stderr, "warning: session was made with Claude Code %s, you have %s\n", origVer, local)
 	}
 
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	newID := newUUID()
-	out := rewriteTranscript(data, cwd, newID)
+	newID := ids.NewUUID()
+	out := transcript.Rewrite(data, cwd, newID)
 
-	dir := sessionDir(cwd)
+	dir := session.Dir(cwd)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
@@ -242,26 +246,4 @@ func gunzipFile(path string) ([]byte, error) {
 	}
 	defer zr.Close()
 	return io.ReadAll(zr)
-}
-
-// peekCwdVersion returns the first cwd and version fields found in the lines.
-func peekCwdVersion(data []byte) (cwd, version string) {
-	for _, line := range bytes.Split(data, []byte("\n")) {
-		if cwd != "" && version != "" {
-			break
-		}
-		var m struct {
-			Cwd     string `json:"cwd"`
-			Version string `json:"version"`
-		}
-		if json.Unmarshal(line, &m) == nil {
-			if cwd == "" {
-				cwd = m.Cwd
-			}
-			if version == "" {
-				version = m.Version
-			}
-		}
-	}
-	return cwd, version
 }

@@ -1,4 +1,5 @@
-package app
+// Package contacts stores per-person croc share codes in ~/.seshare/contacts.json.
+package contacts
 
 import (
 	"encoding/json"
@@ -8,8 +9,8 @@ import (
 	"sort"
 )
 
-// seshareDir holds contacts.json. Overridable in tests.
-var seshareDir = defaultSeshareDir()
+// SeshareDir holds contacts.json. Exported so tests can redirect it.
+var SeshareDir = defaultSeshareDir()
 
 func defaultSeshareDir() string {
 	home, err := os.UserHomeDir()
@@ -19,9 +20,9 @@ func defaultSeshareDir() string {
 	return filepath.Join(home, ".seshare")
 }
 
-func contactsFile() string { return filepath.Join(seshareDir, "contacts.json") }
+func contactsFile() string { return filepath.Join(SeshareDir, "contacts.json") }
 
-func loadContacts() (map[string]string, error) {
+func load() (map[string]string, error) {
 	data, err := os.ReadFile(contactsFile())
 	if os.IsNotExist(err) {
 		return map[string]string{}, nil
@@ -36,13 +37,14 @@ func loadContacts() (map[string]string, error) {
 	return m, nil
 }
 
-func addContact(name, code string) error {
-	m, err := loadContacts()
+// Add stores (or replaces) the code for a contact name.
+func Add(name, code string) error {
+	m, err := load()
 	if err != nil {
 		return err
 	}
 	m[name] = code
-	if err := os.MkdirAll(seshareDir, 0o700); err != nil {
+	if err := os.MkdirAll(SeshareDir, 0o700); err != nil {
 		return err
 	}
 	data, err := json.MarshalIndent(m, "", "  ")
@@ -52,8 +54,9 @@ func addContact(name, code string) error {
 	return os.WriteFile(contactsFile(), data, 0o600)
 }
 
-func getContact(name string) (string, error) {
-	m, err := loadContacts()
+// Get returns a contact's code, or an error if unknown.
+func Get(name string) (string, error) {
+	m, err := load()
 	if err != nil {
 		return "", err
 	}
@@ -64,8 +67,9 @@ func getContact(name string) (string, error) {
 	return code, nil
 }
 
-func listContactNames() ([]string, error) {
-	m, err := loadContacts()
+// ListNames returns contact names, sorted.
+func ListNames() ([]string, error) {
+	m, err := load()
 	if err != nil {
 		return nil, err
 	}

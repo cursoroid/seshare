@@ -1,6 +1,5 @@
-// seshare — move a Claude Code session to another machine over croc so the
-// recipient can continue it with `claude --resume`. See docs/superpowers/specs.
-package app
+// Package cli wires the seshare subcommands together.
+package cli
 
 import (
 	"fmt"
