@@ -6,25 +6,27 @@ with `claude --resume`. Transfers go directly between the two machines over
 
 ## Install
 
+Homebrew (macOS/Linux) — handles PATH for you:
+
 ```sh
-curl -fsSL https://raw.githubusercontent.com/cursoroid/seshare/main/install.sh | sh
+brew install cursoroid/homebrew-tap/seshare
 ```
 
-Runs `go install` and adds Go's bin dir to your `PATH` if it isn't already.
-croc is embedded — no separate install needed.
+Or with Go (installs to `$(go env GOPATH)/bin`; the script also fixes PATH):
 
-Prefer to do it by hand? `go install github.com/cursoroid/seshare@latest`, then
-ensure `$(go env GOPATH)/bin` is on your `PATH`.
+```sh
+curl -fsSL https://raw.githubusercontent.com/cursoroid/seshare/main/install.sh | sh
+# or by hand: go install github.com/cursoroid/seshare@latest
+```
+
+croc is embedded — no separate install needed.
 
 ## Update
 
-Re-run the install command; `@latest` pulls the newest release:
-
 ```sh
-go install github.com/cursoroid/seshare@latest
+brew upgrade seshare                                  # Homebrew
+go install github.com/cursoroid/seshare@latest        # Go (@vX.Y.Z to pin)
 ```
-
-Pin a specific version with `@v1.2.3` instead of `@latest`.
 
 ## Use
 
