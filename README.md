@@ -49,14 +49,18 @@ seshare send @alice              # newest session in this dir
 seshare send <session-id> @alice # a specific one
 
 # recipient (in the dir they want to continue from)
-seshare recv @you
-# -> cd <dir> && claude --resume <new-id>
+seshare recv @you        # prints: cd <dir> && claude --resume <new-id>
+seshare recv @you -r     # ...or jump straight into `claude --resume`
 ```
 
 Both sides must be online at the same time (it's a live P2P handoff).
 
 One-off without pairing: `seshare send` prints a one-time code; recipient runs
 `seshare recv <code>`.
+
+Prefer to pick visually? `seshare tui` browses your sessions across all
+projects with a preview pane; hit enter to send the selected one to a paired
+contact.
 
 ## Notes
 
