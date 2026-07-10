@@ -12,6 +12,12 @@ go install github.com/cursoroid/seshare@latest
 
 croc is embedded — no separate install needed.
 
+If `seshare` isn't found afterward, Go's bin dir isn't on your `PATH`:
+
+```sh
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc && source ~/.zshrc
+```
+
 ## Update
 
 Re-run the install command; `@latest` pulls the newest release:
