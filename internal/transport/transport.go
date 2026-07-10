@@ -6,10 +6,15 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/schollz/croc/v10/src/croc"
 	"github.com/schollz/croc/v10/src/models"
 )
+
+// recvTimeout bounds how long we wait for the sender to appear.
+// ponytail: fixed 2m; make it a flag if someone needs to wait longer.
+const recvTimeout = 2 * time.Minute
 
 // relayPorts mirrors croc's default transfer ports (base 9009 + 4).
 func relayPorts() []string {
@@ -70,8 +75,17 @@ func Recv(code string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := c.Receive(); err != nil {
-		return "", err
+	// Bound the wait: a mismatched code/contact leaves croc sitting at
+	// "securing channel" forever waiting for a peer that never joins.
+	done := make(chan error, 1)
+	go func() { done <- c.Receive() }()
+	select {
+	case err := <-done:
+		if err != nil {
+			return "", err
+		}
+	case <-time.After(recvTimeout):
+		return "", fmt.Errorf("timed out after %s waiting for the sender — make sure they are sending and both sides use the same contact/code", recvTimeout)
 	}
 
 	files, _ := filepath.Glob(filepath.Join(out, "*"))

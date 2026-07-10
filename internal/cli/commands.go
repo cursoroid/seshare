@@ -132,7 +132,9 @@ func cmdSend(args []string) error {
 		if code, err = contacts.Get(name); err != nil {
 			return err
 		}
-		fmt.Printf("sending to %q…\n", name)
+		// Tell them the exact command. Names differ per machine, so the code
+		// form is the reliable one (this is what tripped up the first user).
+		fmt.Printf("sending to %q — on their machine run:  seshare recv %s\n", name, code)
 	} else {
 		code = ids.NewCode()
 		fmt.Printf("one-time code (share it): %s\nrecipient runs:  seshare recv %s\n", code, code)
@@ -164,13 +166,12 @@ func cmdRecv(args []string) error {
 		return fmt.Errorf("usage: seshare recv <@name | code> [-r] [--strip-snapshots]")
 	}
 
-	code := target
-	if strings.HasPrefix(target, "@") {
-		c, err := contacts.Get(target[1:])
-		if err != nil {
-			return err
-		}
-		code = c
+	code, viaContact, err := recvCode(target)
+	if err != nil {
+		return err
+	}
+	if viaContact && !strings.HasPrefix(target, "@") {
+		fmt.Printf("using paired contact %q\n", target)
 	}
 
 	gzPath, err := transport.Recv(code)
@@ -218,6 +219,21 @@ func cmdRecv(args []string) error {
 	}
 	fmt.Printf("continue it with:\n\n    cd %s && claude --resume %s\n", cwd, newID)
 	return nil
+}
+
+// recvCode resolves a recv target to a croc secret. "@name" or a bare word
+// that matches a paired contact -> that contact's code; any other bare word is
+// treated as a literal one-time code. viaContact reports whether a contact was
+// used (so the caller can confirm it wasn't a mistaken literal code).
+func recvCode(target string) (code string, viaContact bool, err error) {
+	if strings.HasPrefix(target, "@") {
+		c, err := contacts.Get(target[1:])
+		return c, true, err
+	}
+	if c, err := contacts.Get(target); err == nil {
+		return c, true, nil
+	}
+	return target, false, nil
 }
 
 // launchResume hands the terminal to `claude --resume <id>` in dir.
