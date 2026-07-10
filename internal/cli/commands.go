@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -143,11 +144,13 @@ func cmdSend(args []string) error {
 
 func cmdRecv(args []string) error {
 	var target string
-	var strip bool
+	var strip, resume bool
 	for _, a := range args {
 		switch {
 		case a == "--strip-snapshots":
 			strip = true
+		case a == "-r" || a == "--resume":
+			resume = true
 		case strings.HasPrefix(a, "-") && a != "-":
 			return fmt.Errorf("unknown flag %q", a)
 		default:
@@ -158,7 +161,7 @@ func cmdRecv(args []string) error {
 		}
 	}
 	if target == "" {
-		return fmt.Errorf("usage: seshare recv <@name | code> [--strip-snapshots]")
+		return fmt.Errorf("usage: seshare recv <@name | code> [-r] [--strip-snapshots]")
 	}
 
 	code := target
@@ -205,8 +208,28 @@ func cmdRecv(args []string) error {
 		return err
 	}
 
-	fmt.Printf("\nsession staged (originally from %s)\ncontinue it with:\n\n    cd %s && claude --resume %s\n", origCwd, cwd, newID)
+	fmt.Printf("\nsession staged (originally from %s)\n", origCwd)
+	if resume {
+		if err := launchResume(cwd, newID); err == nil {
+			return nil
+		}
+		// claude not found / failed to launch — fall through to printing.
+		fmt.Fprintln(os.Stderr, "could not launch claude; run it yourself:")
+	}
+	fmt.Printf("continue it with:\n\n    cd %s && claude --resume %s\n", cwd, newID)
 	return nil
+}
+
+// launchResume hands the terminal to `claude --resume <id>` in dir.
+func launchResume(dir, id string) error {
+	bin, err := exec.LookPath("claude")
+	if err != nil {
+		return err
+	}
+	c := exec.Command(bin, "--resume", id)
+	c.Dir = dir
+	c.Stdin, c.Stdout, c.Stderr = os.Stdin, os.Stdout, os.Stderr
+	return c.Run()
 }
 
 // ---- helpers ------------------------------------------------------------

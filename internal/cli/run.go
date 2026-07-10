@@ -13,7 +13,8 @@ usage:
   seshare pair <name> --rotate          replace a contact's code (re-share once)
   seshare pair --list                   list contacts
   seshare send [session-id] [@name]     send newest (or given) session
-  seshare recv <@name | code>           receive and stage a session
+  seshare recv <@name | code> [-r]      receive, stage (-r resumes in claude)
+  seshare tui                           browse sessions and send interactively
 
 run a command with no valid args for its own help.`
 
@@ -32,6 +33,8 @@ func Main(args []string) int {
 		err = cmdSend(args[1:])
 	case "recv":
 		err = cmdRecv(args[1:])
+	case "tui":
+		err = cmdTUI(args[1:])
 	case "-h", "--help", "help":
 		fmt.Println(usage)
 		return 0

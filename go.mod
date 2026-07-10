@@ -2,13 +2,19 @@ module github.com/cursoroid/seshare
 
 go 1.25.0
 
-require github.com/schollz/croc/v10 v10.4.13
+require (
+	github.com/gdamore/tcell/v2 v2.13.10
+	github.com/rivo/tview v0.42.0
+	github.com/schollz/croc/v10 v10.4.13
+)
 
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/denisbrodbeck/machineid v1.0.1 // indirect
+	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/kalafut/imohash v1.1.1 // indirect
+	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/magisterquis/connectproxy v0.0.0-20200725203833-3582e84f0c9b // indirect
 	github.com/minio/highwayhash v1.0.4 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
@@ -25,5 +31,6 @@ require (
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/term v0.44.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 )
