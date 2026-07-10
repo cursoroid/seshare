@@ -1,6 +1,6 @@
 module github.com/cursoroid/seshare
 
-go 1.26.5
+go 1.25.0
 
 require github.com/schollz/croc/v10 v10.4.13
 
