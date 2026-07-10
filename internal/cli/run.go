@@ -15,11 +15,13 @@ usage:
   seshare send [session-id] [@name]     send newest (or given) session
   seshare recv <@name | code> [-r]      receive, stage (-r resumes in claude)
   seshare tui                           browse sessions and send interactively
+  seshare --version                     print version
 
 run a command with no valid args for its own help.`
 
-// Main runs the CLI and returns the process exit code.
-func Main(args []string) int {
+// Main runs the CLI and returns the process exit code. version is injected at
+// build time (goreleaser) or resolved from build info by the caller.
+func Main(args []string, version string) int {
 	if len(args) < 1 {
 		fmt.Fprintln(os.Stderr, usage)
 		return 2
@@ -35,6 +37,9 @@ func Main(args []string) int {
 		err = cmdRecv(args[1:])
 	case "tui":
 		err = cmdTUI(args[1:])
+	case "-v", "--version", "version":
+		fmt.Printf("seshare %s\n", version)
+		return 0
 	case "-h", "--help", "help":
 		fmt.Println(usage)
 		return 0
