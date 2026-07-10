@@ -7,16 +7,14 @@ with `claude --resume`. Transfers go directly between the two machines over
 ## Install
 
 ```sh
-go install github.com/cursoroid/seshare@latest
+curl -fsSL https://raw.githubusercontent.com/cursoroid/seshare/main/install.sh | sh
 ```
 
+Runs `go install` and adds Go's bin dir to your `PATH` if it isn't already.
 croc is embedded — no separate install needed.
 
-If `seshare` isn't found afterward, Go's bin dir isn't on your `PATH`:
-
-```sh
-echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc && source ~/.zshrc
-```
+Prefer to do it by hand? `go install github.com/cursoroid/seshare@latest`, then
+ensure `$(go env GOPATH)/bin` is on your `PATH`.
 
 ## Update
 
