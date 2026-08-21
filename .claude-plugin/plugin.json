@@ -1,0 +1,13 @@
+{
+  "name": "seshare",
+  "version": "0.1.0",
+  "description": "Share the current Claude Code session peer-to-peer so someone else can continue it with claude --resume.",
+  "author": {
+    "name": "cursoroid",
+    "url": "https://github.com/cursoroid"
+  },
+  "homepage": "https://github.com/cursoroid/seshare",
+  "repository": "https://github.com/cursoroid/seshare",
+  "license": "MIT",
+  "keywords": ["session", "handoff", "p2p", "croc"]
+}
