@@ -9,9 +9,6 @@ description: Use when the user wants to hand off, share, send, or pick up a Clau
 (direct P2P, no server, no account) so the other person can continue it with
 `claude --resume`.
 
-Slash commands cover the common cases: `/seshare:send` and `/seshare:recv`.
-Everything else is below.
-
 ## Before anything
 
 `command -v seshare`. If missing:
@@ -62,15 +59,12 @@ Background it too (waits for the sender, ~2 min timeout). It ends with
 `claude --resume` cannot nest inside a running session. Suggest they type `!`
 followed by the command.
 
+The conversation resumes anywhere, but tool results pointing at the sender's
+absolute paths won't re-resolve unless the recipient has the same code checked
+out.
+
 ## Browsing
 
 `seshare tui` browses sessions across all projects with a preview pane and sends
 the selected one. It needs a real terminal — tell the user to run it themselves
 rather than calling it from a tool.
-
-## Caveats worth repeating
-
-- The conversation resumes anywhere, but tool results pointing at the sender's
-  absolute paths won't re-resolve unless the recipient has the same code checked
-  out.
-- Only send to people you trust.

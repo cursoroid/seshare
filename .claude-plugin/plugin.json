@@ -6,8 +6,6 @@
     "name": "cursoroid",
     "url": "https://github.com/cursoroid"
   },
-  "homepage": "https://github.com/cursoroid/seshare",
   "repository": "https://github.com/cursoroid/seshare",
-  "license": "MIT",
-  "keywords": ["session", "handoff", "p2p", "croc"]
+  "license": "MIT"
 }

@@ -9,7 +9,6 @@
   "plugins": [
     {
       "name": "seshare",
-      "description": "Send and receive Claude Code sessions from inside Claude Code.",
       "source": "./",
       "category": "productivity"
     }

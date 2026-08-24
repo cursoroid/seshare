@@ -87,9 +87,8 @@ Then `/seshare:send bob` and `/seshare:recv alice` — or just say "send this
 session to bob" and Claude reaches for the skill. Pairing, `--list` and
 `--rotate` work through the skill too.
 
-Two limits worth knowing: the transcript on disk trails the live conversation by
-a turn or two, and `claude --resume` can't start inside a running session, so
-`recv` hands you the `cd ... && claude --resume ...` line to run yourself.
+`claude --resume` can't start inside a running session, so `recv` hands you the
+`cd ... && claude --resume ...` line to run yourself.
 
 ## Notes
 
