@@ -42,9 +42,19 @@ seshare send --yes <session-id> bob   # a specific one
 seshare send --yes                    # no contact: prints a one-time code
 ```
 
-Run it in the background: it blocks until the recipient connects. Both sides
-must be online at the same time. The on-disk transcript trails the live
-conversation, so the newest turn or two may not travel.
+A contact's code is a **permanent** shared secret and `send bob` prints it. Never
+repeat it back — say "sending to bob" and stop. Only the one-time code from a
+contactless send is safe to relay.
+
+An unpaired or misspelled name is parsed as a session id, so `send bpb <id>`
+quietly falls back to a one-time code. Read the output before reporting success:
+`sending to "bob"` reached the contact, `one-time code` did not.
+
+Run it in the background: it blocks until the recipient connects, with no
+timeout of its own. Give up after a few minutes and kill the shell, or the croc
+process and its temp copy of the transcript outlive the turn. Both sides must be
+online at the same time. The on-disk transcript trails the live conversation, so
+the newest turn or two may not travel.
 
 ## Receiving
 
@@ -54,10 +64,18 @@ seshare recv <code>                   # raw code, always works
 seshare recv alice --strip-snapshots  # if --resume chokes on file snapshots
 ```
 
-Background it too (waits for the sender, ~2 min timeout). It ends with
-`cd <dir> && claude --resume <id>` — hand that to the user, do not run it:
-`claude --resume` cannot nest inside a running session. Suggest they type `!`
-followed by the command.
+The session is staged for whatever directory the command runs in, so ask which
+one the user wants and pass it: `cd <dir> && seshare recv alice`.
+
+Background it too. The whole receive — finding the sender and moving the file —
+must finish inside about two minutes. It ends with `cd <dir> && claude --resume
+<id>`: hand that to the user, do not run it, and never pass `-r`/`--resume` to
+`recv` from a tool call. Both exec `claude --resume` on the caller's stdio, which
+starts a nested Claude Code that never exits and hangs the call. Suggest the user
+type `!` followed by the command.
+
+`--strip-snapshots` applies on receive, so it needs a whole new live transfer:
+the sender has to send again (and a spent one-time code needs replacing).
 
 The conversation resumes anywhere, but tool results pointing at the sender's
 absolute paths won't re-resolve unless the recipient has the same code checked

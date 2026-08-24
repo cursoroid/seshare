@@ -1,6 +1,6 @@
 ---
 description: Send this Claude Code session to a paired seshare contact
-argument-hint: [contact] [session-id]
+argument-hint: [session-id] [contact]
 allowed-tools: Bash
 ---
 
