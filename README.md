@@ -73,6 +73,23 @@ Prefer to pick visually? `seshare tui` browses your sessions across all
 projects with a preview pane; hit enter to send the selected one to a paired
 contact.
 
+## Use it from inside Claude Code
+
+This repo doubles as a Claude Code plugin, so you can hand off a session without
+leaving it:
+
+```
+/plugin marketplace add cursoroid/seshare
+/plugin install seshare@seshare
+```
+
+Then `/seshare:send bob` and `/seshare:recv alice` — or just say "send this
+session to bob" and Claude reaches for the skill. Pairing, `--list` and
+`--rotate` work through the skill too.
+
+`claude --resume` can't start inside a running session, so `recv` hands you the
+`cd ... && claude --resume ...` line to run yourself.
+
 ## Notes
 
 - The transcript may contain secrets, file contents and absolute paths. `send`

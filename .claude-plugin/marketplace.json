@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "seshare",
+  "description": "seshare — hand a Claude Code session to someone else, peer-to-peer.",
+  "owner": {
+    "name": "cursoroid",
+    "url": "https://github.com/cursoroid"
+  },
+  "plugins": [
+    {
+      "name": "seshare",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}
