@@ -68,11 +68,11 @@ The session is staged for whatever directory the command runs in, so ask which
 one the user wants and pass it: `cd <dir> && seshare recv alice`.
 
 Background it too. The whole receive — finding the sender and moving the file —
-must finish inside about two minutes. It ends with `cd <dir> && claude --resume
-<id>`: hand that to the user, do not run it, and never pass `-r`/`--resume` to
-`recv` from a tool call. Both exec `claude --resume` on the caller's stdio, which
-starts a nested Claude Code that never exits and hangs the call. Suggest the user
-type `!` followed by the command.
+must finish inside about two minutes. Run from inside Claude Code it ends with
+`/resume <id>`: hand that to the user to type, do not run it. Never pass
+`-r`/`--resume` to `recv` from a tool call — it execs `claude --resume` on the
+caller's stdio, starting a nested Claude Code that never exits and hangs the
+call. (Outside Claude Code it prints `cd <dir> && claude --resume <id>` instead.)
 
 `--strip-snapshots` applies on receive, so it needs a whole new live transfer:
 the sender has to send again (and a spent one-time code needs replacing).

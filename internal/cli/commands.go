@@ -230,6 +230,11 @@ func cmdRecv(args []string) error {
 		// claude not found / failed to launch — fall through to printing.
 		fmt.Fprintln(os.Stderr, "could not launch claude; run it yourself:")
 	}
+	if os.Getenv("CLAUDECODE") != "" {
+		// ponytail: inside Claude Code, /resume lists this dir's sessions — no shell hop.
+		fmt.Printf("continue it with:\n\n    /resume %s\n", newID)
+		return nil
+	}
 	fmt.Printf("continue it with:\n\n    cd %s && claude --resume %s\n", cwd, newID)
 	return nil
 }

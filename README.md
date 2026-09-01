@@ -52,6 +52,7 @@ seshare send <session-id> bob   # a specific one
 
 # bob (recipient), in the dir he wants to continue from — the name HE saved for you
 seshare recv alice        # prints: cd <dir> && claude --resume <new-id>
+                          # (inside Claude Code it prints `/resume <new-id>`)
 seshare recv alice -r     # ...or jump straight into `claude --resume`
 ```
 
@@ -87,8 +88,8 @@ Then `/seshare:send bob` and `/seshare:recv alice` — or just say "send this
 session to bob" and Claude reaches for the skill. Pairing, `--list` and
 `--rotate` work through the skill too.
 
-`claude --resume` can't start inside a running session, so `recv` hands you the
-`cd ... && claude --resume ...` line to run yourself.
+`claude --resume` can't start inside a running session, so `recv` hands you a
+`/resume <new-id>` line to type into Claude Code yourself.
 
 ## Notes
 
